@@ -4,6 +4,8 @@ params.mu_k = 0.14;
 params.Large_Motor_Array = ;
 params.Small_Motor_Array = ;
 params.throttle_array = ;
+params.Ts = 0.01;
+params.alpha = 0.1;
 
 % configurations
 config.initial_height = 0.0;
