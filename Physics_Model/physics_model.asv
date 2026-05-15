@@ -11,12 +11,13 @@ function [x_dot] = physics_model(x, u, config, params)
     % Throttle setting thrust
     motor = config.motor_choice;
     if motor == 1
-        thrust_array = params.Large_Motor_Array; % get from table 
+        thrust_array = params.Large_Motor_Curve; % get from table 
     elseif motor == 2
-        thrust_array = params.Small_Motor_Array; % get from other table
+        thrust_array = params.Small_Motor_Curve; % get from other table
     end
-    T = interp1(thrust_array, ...
-        params.throttle_array, u, 'linear', 'extrapolate');
+    T = polyval(Thrust_array, u);
+    interp1(thrust_array, ...
+   params.throttle_array, hover_thrust_gf, 'linear', 'extrapolate');
 
     % Forces
     W = m_total * params.g;

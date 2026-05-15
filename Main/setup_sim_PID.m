@@ -1,18 +1,21 @@
 % parameters
 params.g = 9.81;
-params.m_cart = 0.150;
-params.m_total = 0.650;
 params.mu_k = 0.14;
-params.L_thrust = 0.27;
+params.Large_Motor_Array = ;
+params.Small_Motor_Array = ;
+params.throttle_array = ;
 
 % configurations
-config.velocity_tolerance = 1e-3;
 config.initial_height = 0.0;
-config.max_thrust_gf = 1300;
-config.target_height = 1.0;
+config.motor_mass = 0.0;
+config.prop_mass = 0.0;
+config.cable_mass = 0.0;
+config.arm_mass = 0.0;
+config.motor_choice = 1;
 
 % hover thrust
-hover_thrust_gf = (params.m_total * 1000) / 2; 
+m_total = 2 * config.m_motor + 2 * config.m_prop + config.m_cable + config.m_frame;
+hover_thrust_gf = (m_total * 1000) / 2; 
 exact_throttle = interp1(params.thrust_array, ...
    params.throttle_array, hover_thrust_gf, 'linear', 'extrapolate');
 hover_throttle = round(exact_throttle);
