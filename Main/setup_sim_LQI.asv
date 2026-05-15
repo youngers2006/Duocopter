@@ -14,8 +14,8 @@ config.arm_mass = 0.0;
 config.motor_choice = 1;
 
 % hover thrust
-m_total = 2 * config.motor_mass + 2 * config.prop_mass + config.cable_mass + 2 * config.arm_mass;
-hover_thrust_gf = (m_total * 1000) / 2;
+m_total = 2 * config.m_motor + 2 * config.m_prop + config.m_cable + config.m_frame;
+hover_thrust_gf = (m_total * 1000) / 2; 
 exact_throttle = interp1(params.thrust_array, ...
    params.throttle_array, hover_thrust_gf, 'linear', 'extrapolate');
 hover_throttle = round(exact_throttle);
@@ -39,13 +39,8 @@ Bd = [0;
 Cd = [1, 0];
 
 A = [Ad, 0;
-     Cd, 1];
-B = [Bd;
-     0];
+     Cd, ];
 
-K = dlqr(A, B, Q, R);
-K1 = K(1);
-K2 = K(2);
-K3 = K(3);
+K = dlqr()
 
 disp('Workspace loaded.');
