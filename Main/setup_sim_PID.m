@@ -27,8 +27,11 @@ params.throttle_array_small = u_throttle_small(valid_indices);
 params.Small_Motor_Array = u_thrust_small(valid_indices);
 
 params.g = 9.81;
-params.mu_k = 0.14;
+params.mu_k = (0.17 - 0.11) / 2;
+params.mu_s = 0.2; % assumed static friction coefficient
 params.Ts = 0.01;
+params.alpha = 0.2;
+params.static_friction = 0.130 * 9.81;
 
 % configurations
 config.initial_height = 0.0;

@@ -22,7 +22,13 @@ function [x_dot] = physics_model(x, u, config, params)
 
     % Forces
     W = m_total * params.g;
-    F = x(2) * params.mu_k;
+
+    if x(2) == 0 
+        F = params.static_friction;
+    else
+        N = params.static_friction / params.mu_s; % add thrust from bending contribution
+        F = params.mu_k * N;
+    end
 
     % Force balance
     R = T - (W + F);
