@@ -12,22 +12,24 @@ function [x_dot] = physics_model(x, u, config, params)
     motor = config.motor_choice;
     if motor == 1
         thrust_array = params.Large_Motor_Array; % get from table 
-    elseif motor == 2
+        throttle_array = params.throttle_array_large;
+    else % motor == 2
         thrust_array = params.Small_Motor_Array; % get from other table
+        throttle_array = params.throttle_array_small;
     end
-    T = interp1(thrust_array, ...
-        params.throttle_array, u, 'linear', 'extrapolate');
+    T = interp1(throttle_array, ...
+        thrust_array, u, 'linear', 'extrap');
 
     % Forces
     W = m_total * params.g;
-    F = x(2) * params.mu;
+    F = x(2) * params.mu_k;
 
     % Force balance
     R = T - (W + F);
     a = R / m_total;
 
     % State derivative
-    x_dot = zeros(2);
+    x_dot = zeros(2,1);
     x_dot(1) = x(2);
     x_dot(2) = a;
 end
