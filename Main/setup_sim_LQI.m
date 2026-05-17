@@ -42,21 +42,21 @@ params.min_height = 0;
 config.initial_height = 0.0;
 config.motor_mass = 0.050;
 config.prop_mass = 0.010; 
-config.cable_mass = 0.020;
+config.cable_density = 0.020;
 config.arm_mass = 0.030;
 config.motor_choice = 1;
 
 % hover thrust
-m_total = 2 * config.motor_mass + 2 * config.prop_mass + config.cable_mass + 2 * config.arm_mass;
-hover_thrust_gf = (m_total * 1000) / 2;
+m_total_I = 2 * config.motor_mass + 2 * config.prop_mass + 2 * config.arm_mass;
+hover_thrust_zero = (m_total_I * params.g) / 2;
 if config.motor_choice == 1
     exact_throttle = interp1(params.Large_Motor_Array, ...
-        params.throttle_array_large, hover_thrust_gf, 'linear', 'extrap');
+        params.throttle_array_large, hover_thrust, 'linear', 'extrap');
 else % config.motor_choice == 2
     exact_throttle = interp1(params.Small_Motor_Array, ...
-        params.throttle_array_small, hover_thrust_gf, 'linear', 'extrap');
+        params.throttle_array_small, hover_thrust, 'linear', 'extrap');
 end
-hover_throttle = round(exact_throttle) / 10;
+hover_throttle_zero = round(exact_throttle) / 10;
 
 % LQI cost matrices
 Q = [100, 0, 0;
@@ -80,7 +80,7 @@ dTdu = (dTdu * 2) * 0.00981;
 Ac = [0, 1;
       0, 0];
 Bc = [0;
-      dTdu / m_total];
+      dTdu / m_total_I];
 Cc = [1, 0];
 Dc = 0;
 

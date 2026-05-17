@@ -7,31 +7,19 @@ function [x_dot] = physics_model(x, u, config, params)
     m_cable = config.cable_mass;
     m_frame = 2 * config.arm_mass; 
     m_total = 2 * m_motor + 2 * m_prop + m_cable + m_frame;
+    m_total = m_total / 1000;
 
     % Throttle setting thrust
     motor = config.motor_choice;
-    if motor == 1
-        thrust_array = params.Large_Motor_Array; % get from table 
-        throttle_array = params.throttle_array_large;
-    else % motor == 2
-        thrust_array = params.Small_Motor_Array; % get from other table
-        throttle_array = params.throttle_array_small;
-    end
-    T = interp1(throttle_array, ...
-        thrust_array, u, 'linear', 'extrap');
+    T = get_thrust(u, motor, params); % in Newtons
 
     % Forces
     W = m_total * params.g;
 
-    if x(2) == 0 
-        F = params.static_friction;
-    else
-        N = params.static_friction / params.mu_s; % add thrust from bending contribution
-        F = params.mu_k * N;
-    end
+    F = get_friction();
 
     % Force balance
-    R = T - (W + F);
+    R = T - W + F;
     a = R / m_total;
 
     % State derivative
