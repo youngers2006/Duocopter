@@ -56,7 +56,7 @@ else % config.motor_choice == 2
     exact_throttle = interp1(params.Small_Motor_Array, ...
         params.throttle_array_small, hover_thrust_gf, 'linear', 'extrap');
 end
-hover_throttle = round(exact_throttle);
+hover_throttle = round(exact_throttle) / 10;
 
 % LQI cost matrices
 Q = [100, 0, 0;
@@ -68,11 +68,11 @@ R = 20;
 if config.motor_choice == 1
     dTdu_array = gradient(params.Large_Motor_Array, params.throttle_array_large);
     dTdu = interp1(params.throttle_array_large, ...
-        dTdu_array, hover_throttle, 'linear');
+        dTdu_array, hover_throttle * 10, 'linear');
 else % config.motor_choice == 2
     dTdu_array = gradient(params.Small_Motor_Array, params.throttle_array_small);
     dTdu = interp1(params.throttle_array_small, ...
-        dTdu_array, hover_throttle, 'linear');
+        dTdu_array, hover_throttle * 10, 'linear');
 end
 dTdu = (dTdu * 2) * 0.00981;
 
