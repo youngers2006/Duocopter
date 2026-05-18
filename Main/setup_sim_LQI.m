@@ -1,62 +1,56 @@
 clear
 clc
 % parameters
-% Large motor
-filename = 'Large_Motor_data.csv';
-opts = detectImportOptions(filename);
+% motor
+opts = detectImportOptions("Clean_Throttle_Power.csv");
 opts.VariableNamingRule = 'preserve'; 
-motor_data = readtable(filename, opts);
-raw_pwm = motor_data.("ESC signal (µs)");
-raw_thrust_gf = motor_data.("Thrust (gf)");
-throttle_mapped = raw_pwm - 1000;
-[u_throttle_large, ~, idx_large] = unique(throttle_mapped);
-u_thrust_large = accumarray(idx_large, raw_thrust_gf, [], @mean);
-valid_indices = u_throttle_large <= 1000;
-params.throttle_array_large = u_throttle_large(valid_indices);
-params.Large_Motor_Array = u_thrust_large(valid_indices);
-
-% Small motor
-filename = 'Small_Motor_data.csv';
-opts = detectImportOptions(filename);
+power_data = readtable("Clean_Throttle_Power.csv", opts);
+opts = detectImportOptions("Clean_Throttle_Thrust.csv");
 opts.VariableNamingRule = 'preserve'; 
-motor_data = readtable(filename, opts);
-raw_pwm = motor_data.("ESC signal (µs)");
-raw_thrust_gf = motor_data.("Thrust (gf)");
-throttle_mapped = raw_pwm - 1000;
-[u_throttle_small, ~, idx_small] = unique(throttle_mapped);
-u_thrust_small = accumarray(idx_small, raw_thrust_gf, [], @mean);
-valid_indices = u_throttle_small <= 1000;
-params.throttle_array_small = u_throttle_small(valid_indices);
-params.Small_Motor_Array = u_thrust_small(valid_indices);
+thrust_data = readtable("Clean_Throttle_Thrust.csv", opts);
 
-params.g = 9.81;
+params.throttle_array = thrust_data.Throttle_Percent;
+params.thrust_array = (thrust_data.Thrust_gf / 1000) * 9.81;
+params.power_array = power_data.Power_W;
+
+% replace this when results are obtained
+params.deflection_array = zeros(1, 100);
+params.thrust_array_deflection = linspace(0, max(params.thrust_array), 100);
+
+params.tau_motor = 0.2;
+params.v_tolerance = 1e-3;
+params.max_v = 40;
 params.mu_k = (0.17 + 0.11) / 2;
-params.mu_s = 0.2; % assumed static friction coefficient
-params.Ts = 0.01;
+params.Ts = 0.05;
 params.alpha = 0.2;
-params.static_friction = 0.130 * 9.81;
+params.Fs_max = 0.130 * 9.81;
 params.max_height = 1.44;
 params.min_height = 0;
+params.lidar_noise_var = 0.05;
 
 % configurations
 config.initial_height = 0.0;
-config.motor_mass = 0.050;
-config.prop_mass = 0.010; 
-config.cable_density = 0.020;
-config.arm_mass = 0.030;
-config.motor_choice = 1;
+config.cable_length = 1.0;
+config.cart_length = 0.214;
+config.drone_cg = 0.005;
+config.motor_moment_arm_y = 0.05;
+
+config.cable_mass = 0.19;
+config.m_motor = 0.076;
+config.m_prop = 0.006;
+config.m_esc = 0.04; 
+config.m_cart = 0.15;
+config.m_structure = 0.03;
 
 % hover thrust
-m_total_I = 2 * config.motor_mass + 2 * config.prop_mass + 2 * config.arm_mass;
-hover_thrust_zero = (m_total_I * params.g) / 2;
-if config.motor_choice == 1
-    exact_throttle = interp1(params.Large_Motor_Array, ...
-        params.throttle_array_large, hover_thrust, 'linear', 'extrap');
-else % config.motor_choice == 2
-    exact_throttle = interp1(params.Small_Motor_Array, ...
-        params.throttle_array_small, hover_thrust, 'linear', 'extrap');
-end
-hover_throttle_zero = round(exact_throttle) / 10;
+m_cable_I = (config.cable_mass / config.cable_length) * ...
+    (config.initial_height - (config.cart_length / 2) + config.cable_length);
+m_total_I = 2 * (config.m_motor + config.m_prop + config.m_esc) + ...
+m_cable_I + config.m_structure + config.m_cart;
+
+params.hover_thrust_I = (m_total_I * 9.81) / 2;
+params.hover_throttle_I = round(interp1(params.thrust_array, ...
+    params.throttle_array, params.hover_thrust_I, 'linear', 'extrap'));
 
 % LQI cost matrices
 Q = [100, 0, 0;
