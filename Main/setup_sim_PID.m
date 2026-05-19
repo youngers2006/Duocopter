@@ -32,8 +32,8 @@ params.lidar_noise_var = 0.00005;
 config.initial_height = 0.0;
 config.cable_length = 1.0;
 config.cart_length = 0.214;
-config.drone_cg = 0.005;
-config.motor_moment_arm_y = 0.05;
+config.drone_cg = 0.01176;
+config.motor_moment_arm_y = 0.01176;
 config.motor_moment_arm_x = 0.27;
 
 config.cable_mass = 0.19;
@@ -41,7 +41,7 @@ config.m_motor = 0.076;
 config.m_prop = 0.006;
 config.m_esc = 0.04;
 config.m_cart = 0.15;
-config.m_structure = 0.03;
+config.m_structure = 0.033;
 
 % hover thrust
 m_cable_I = (config.cable_mass / config.cable_length) * ...
@@ -49,7 +49,7 @@ m_cable_I = (config.cable_mass / config.cable_length) * ...
 m_total_I = 2 * (config.m_motor + config.m_prop + config.m_esc) + ...
 m_cable_I + config.m_structure + config.m_cart;
 
-params.hover_thrust_I = (m_total_I * 9.81) / 2;
+params.hover_thrust_I = m_total_I * 9.81;
 params.hover_throttle_I = round(interp1(params.thrust_array, ...
     params.throttle_array, params.hover_thrust_I, 'linear', 'extrap'));
 
