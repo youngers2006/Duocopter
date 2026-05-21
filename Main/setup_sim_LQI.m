@@ -17,12 +17,12 @@ params.power_array = 2 * power_data.Power_W;
 params.deflection_array = zeros(1, 100);
 params.thrust_array_deflection = linspace(0, max(params.thrust_array), 100);
 
-params.tau_motor = 0.2;
+params.tau_motor = 0.05;
 params.v_tolerance = 1e-3;
 params.max_v = 40;
 params.mu_k = (0.17 + 0.11) / 2;
 params.Ts = 0.05;
-params.alpha = 0.05;
+params.alpha = 0.2;
 params.Fs_max = 0.130 * 9.81;
 params.max_height = 1.44;
 params.min_height = 0;
@@ -59,6 +59,10 @@ Q = [100, 0, 0;
      0, 0, 500];
 R = 20;
 
-
+dh = 0.1;
+lin_density = 2 * 0.19 / 1;
+[K_gains, z_gains] = gain_scheduling(Q, ...
+    R, params.mu_k, config.drone_cg, config.cart_length, config.motor_moment_arm_x, params.min_height, params.max_height, ...
+    dh, params.Ts, m_total_I, lin_density, params.thrust_array, params.throttle_array);
 
 disp('Workspace loaded.');
