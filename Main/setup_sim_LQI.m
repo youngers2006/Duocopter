@@ -13,16 +13,12 @@ params.throttle_array = thrust_data.Throttle_Percent;
 params.thrust_array = 2 * (thrust_data.Thrust_gf / 1000) * 9.81;
 params.power_array = 2 * power_data.Power_W;
 
-% replace this when results are obtained
-params.deflection_array = zeros(1, 100);
-params.thrust_array_deflection = linspace(0, max(params.thrust_array), 100);
-
 params.tau_motor = 0.05;
 params.v_tolerance = 1e-3;
 params.max_v = 40;
 params.mu_k = (0.17 + 0.11) / 2;
 params.Ts = 0.05;
-params.alpha = 0.2;
+params.alpha = 0.4;
 params.Fs_max = 0.130 * 9.81;
 params.max_height = 1.44;
 params.min_height = 0;
@@ -50,19 +46,19 @@ m_total_I = 2 * (config.m_motor + config.m_prop + config.m_esc) + ...
 m_cable_I + config.m_structure + config.m_cart;
 
 params.hover_thrust_I = m_total_I * 9.81;
-params.hover_throttle_I = round(interp1(params.thrust_array, ...
-    params.throttle_array, params.hover_thrust_I, 'linear', 'extrap'));
+params.hover_throttle_I = interp1(params.thrust_array, ...
+    params.throttle_array, params.hover_thrust_I, 'linear', 'extrap');
 
 % LQI cost matrices
 Q = [100, 0, 0;
-     0, 10, 0;
-     0, 0, 500];
-R = 20;
+     0,   4, 0;
+     0,   0, 4];
+R = 10;
 
 dh = 0.1;
 lin_density = 2 * 0.19 / 1;
 [K_gains, z_gains] = gain_scheduling(Q, ...
-    R, params.mu_k, config.drone_cg, config.cart_length, config.motor_moment_arm_x, params.min_height, params.max_height, ...
+    R, params.mu_k, config.drone_cg, config.cart_length, config.motor_moment_arm_y, params.min_height, params.max_height, ...
     dh, params.Ts, m_total_I, lin_density, params.thrust_array, params.throttle_array);
 
 disp('Workspace loaded.');

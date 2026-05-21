@@ -1,6 +1,6 @@
 function [K, z_arr] = gain_scheduling(Q, R, mu_k, L_cg, L_c, L_m, h_min, h_max, dh, Ts, M0, lin_density, thrust_array, throttle_array)
 % Calculate a gain schedule for the drone given the cost matrices and spacing
-    N = floor(h_max / dh);
+    N = floor((h_max - h_min) / dh);
     Cc = [1, 0];
     Dc = 0;
     K = zeros(N+1, 3);
@@ -16,8 +16,8 @@ function [K, z_arr] = gain_scheduling(Q, R, mu_k, L_cg, L_c, L_m, h_min, h_max, 
         A21 = - ((lin_density * 9.81) / m) * (1 - mu_k * (L_cg / L_c));
         thrust = m * 9.81;
 
-        hover_throttle = round(interp1(thrust_array, ...
-            throttle_array, thrust, 'linear', 'extrap'));
+        hover_throttle = interp1(thrust_array, ...
+            throttle_array, thrust, 'linear', 'extrap');
         dT_du_hover = polyval(P_slope, hover_throttle);
         B2 = (1 - mu_k * (L_m) / (L_c)) * (dT_du_hover / m); 
 

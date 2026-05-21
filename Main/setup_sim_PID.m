@@ -13,10 +13,6 @@ params.throttle_array = thrust_data.Throttle_Percent;
 params.thrust_array = 2 * (thrust_data.Thrust_gf / 1000) * 9.81;
 params.power_array = 2 * power_data.Power_W;
 
-% replace this when results are obtained
-params.deflection_array = zeros(1, 100);
-params.thrust_array_deflection = linspace(0, max(params.thrust_array), 100);
-
 params.tau_motor = 0.2;
 params.v_tolerance = 1e-3;
 params.max_v = 40;
