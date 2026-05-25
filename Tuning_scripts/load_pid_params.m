@@ -1,0 +1,43 @@
+function [config, params] = load_pid_params()
+    % parameters
+    % motor
+    [params.power_array, params.thrust_array, params.throttle_array] = process_motor_data("Small_Motor_data.csv");
+    
+    params.tau_motor = 0.06;
+    params.v_tolerance = 1e-3;
+    params.max_v = 40;
+    params.mu_k = (0.17 + 0.11) / 2;
+    params.Ts = 0.05;
+    params.Fs_max = 0.130 * 9.81;
+    params.max_height = 1.44;
+    params.min_height = 0;
+    params.lidar_noise_var = 4.9129e-05;
+    
+    % configurations
+    config.initial_height = 0.0;
+    config.cable_length = 1.0;
+    config.cart_length = 0.214;
+    config.drone_cg = 0.01176;
+    config.motor_moment_arm_y = 0.0135;
+    config.motor_moment_arm_x = 0.27;
+    
+    config.cable_mass = 0.19;
+    config.m_motor = 0.076;
+    config.m_prop = 0.006;
+    config.m_esc = 0.04;
+    config.m_cart = 0.15;
+    config.m_structure = 0.057;
+    
+    % hover thrust at zero height
+    config.m_cable_I = (config.cable_mass / config.cable_length) * ...
+        (config.cable_length - (config.cart_length / 2));
+    config.m_total_I = 2 * (config.m_motor + config.m_prop + config.m_esc) + ...
+    config.m_cable_I + config.m_structure + config.m_cart;
+    
+    params.hover_thrust_I = config.m_total_I * 9.81;
+    params.hover_throttle_I = interp1(params.thrust_array, ...
+        params.throttle_array, params.hover_thrust_I, 'linear', 'extrap');
+
+    
+    disp('Workspace loaded.');
+end
