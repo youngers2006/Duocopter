@@ -1,18 +1,18 @@
 disp('Initialising Optimiser...');
 
 % Load parameters and optimisation bounds
-[config, params] = load_pid_params();
+[config, params, ref_signal] = load_pid_params();
 num_vars = 5;
 lb = [0.0, 0.0, 0.0, 1, 0.0]; 
-ub = [500.0, 500.0, 500.0, 50, 50];
+ub = [400.0, 400.0, 400.0, 30, 30];
 
 % define cost function
-cost_function = @(x) GA_optim_fn(x, config, params);
+cost_function = @(x) GA_optim_fn(x, config, params, ref_signal);
 
 % solver setup
 options = optimoptions('gamultiobj', ...
     'PopulationSize', 100, ...         
-    'MaxGenerations', 50, ...          
+    'MaxGenerations', 60, ...          
     'CrossoverFraction', 0.8, ...      
     'ParetoFraction', 0.35, ...        
     'UseParallel', true, ...           
@@ -30,6 +30,8 @@ modelName = 'Model_PID';
 if ~bdIsLoaded(modelName)
     load_system(modelName);
 end
+set_param(modelName, 'SignalLogging', 'off');
+set_param(modelName, 'ReturnWorkspaceOutputs', 'on');
 set_param(modelName, 'FastRestart', 'on');
 
 % optimisation to create pareto optimisation frontier

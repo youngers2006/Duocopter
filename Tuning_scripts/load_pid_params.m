@@ -1,9 +1,9 @@
-function [config, params] = load_pid_params()
+function [config, params, ref_signal] = load_pid_params()
     % parameters
     % motor
     [params.power_array, params.thrust_array, params.throttle_array] = process_motor_data("Small_Motor_data.csv");
     
-    params.tau_motor = 0.06;
+    params.tau_motor = 0.006;
     params.v_tolerance = 1e-3;
     params.max_v = 40;
     params.mu_k = (0.17 + 0.11) / 2;
@@ -37,6 +37,10 @@ function [config, params] = load_pid_params()
     params.hover_thrust_I = config.m_total_I * 9.81;
     params.hover_throttle_I = interp1(params.thrust_array, ...
         params.throttle_array, params.hover_thrust_I, 'linear', 'extrap');
+
+    ref_signal = timeseries([0, 0, 1.0, 0.2, 0.2, 1.1, 1.1, 0.25, 0.9, 0.5, 0, 0], ...
+        [0, 5, 10, 20, 30, 30.001, 41, 46, 46.001, 65, 70, 80]);
+    ref_signal.Name = 'Reference_Height';
 
     
     disp('Workspace loaded.');

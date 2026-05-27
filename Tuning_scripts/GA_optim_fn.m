@@ -1,4 +1,4 @@
-function [J] = GA_optim_fn(x, config, params)
+function [J] = GA_optim_fn(x, config, params, ref_signal)
 % x = [KP_o, KI_o, KD_o, N_o, KP_i, KI_i, KD_i, N_i]
     % unpack variables
     Kp = x(1);
@@ -27,18 +27,23 @@ function [J] = GA_optim_fn(x, config, params)
     simIn_nom = setVariable(simIn_nom, 'phi', phi);
     simIn_nom = setVariable(simIn_nom, 'profile', profile_ramp);
     simIn_nom = setVariable(simIn_nom, 'step_height', step_height_nom);
-    out_nom = sim(simIn_nom);
+    simIn_nom = setVariable(simIn_nom, 'ref_signal', ref_signal);
+    simIn_nom = setModelParameter(simIn_nom, 'TimeOut', 30);
     
-    mse_signal = out_nom.MSE;
-    mse_array = mse_signal.Data;
-    final_mse = mse_array(end);
-    
-    energy_signal = out_nom.energy;
-    energy_array = energy_signal.Data;
-    final_energy = energy_array(end);
-   
-    J1_mse = final_mse;
-    J1_en = final_energy;
+    try
+        out_nom = sim(simIn_nom);
+        mse_signal = out_nom.MSE;
+        mse_array = mse_signal.Data;
+        final_mse = mse_array(end);
+        energy_signal = out_nom.energy;
+        energy_array = energy_signal.Data;
+        final_energy = energy_array(end);
+        J1_mse = final_mse;
+        J1_en = final_energy;
+    catch
+        J1_mse = 1e6;
+        J1_en = 1e6;
+    end
 
     simIn_wcl = Simulink.SimulationInput(modelName);
 
@@ -50,23 +55,30 @@ function [J] = GA_optim_fn(x, config, params)
     simIn_wcl = setVariable(simIn_wcl, 'phi', phi);
     simIn_wcl = setVariable(simIn_wcl, 'profile', profile);
     simIn_wcl = setVariable(simIn_wcl, 'step_height', step_height_wcl);
-    out_wcl = sim(simIn_wcl);
-
-    mse_signal = out_wcl.MSE;
-    mse_array = mse_signal.Data;
-    final_mse = mse_array(end);
+    simIn_wcl = setVariable(simIn_wcl, 'ref_signal', ref_signal);
+    simIn_wcl = setModelParameter(simIn_wcl, 'TimeOut', 30);
     
-    energy_signal = out_wcl.energy;
-    energy_array = energy_signal.Data;
-    final_energy = energy_array(end);
-   
-    J2_mse = final_mse;
-    J2_en = final_energy;
+    try
+        out_wcl = sim(simIn_wcl);
+        mse_signal = out_wcl.MSE;
+        mse_array = mse_signal.Data;
+        final_mse = mse_array(end);
+        energy_signal = out_wcl.energy;
+        energy_array = energy_signal.Data;
+        final_energy = energy_array(end);
+        J2_mse = final_mse;
+        J2_en = final_energy;
+    catch
+        J2_mse = 1e6;
+        J2_en = 1e6;
+    end
 
     simIn_wch = Simulink.SimulationInput(modelName);
 
-    % sim for heavy drop
-    config.initial_height = 1.44;
+    % sim for heavy rise
+    config_h = config;
+    config_h.initial_height = 0.0;
+    simIn_wch = setVariable(simIn_wch, 'config', config_h);
     simIn_wch = setVariable(simIn_wch, 'Kp', Kp);
     simIn_wch = setVariable(simIn_wch, 'Ki', Ki);
     simIn_wch = setVariable(simIn_wch, 'Kd', Kd);
@@ -74,20 +86,24 @@ function [J] = GA_optim_fn(x, config, params)
     simIn_wch = setVariable(simIn_wch, 'phi', phi);
     simIn_wch = setVariable(simIn_wch, 'profile', profile);
     simIn_wch = setVariable(simIn_wch, 'step_height', step_height_wch);
-    out_wch = sim(simIn_wch);
-    config.initial_height = 0;
-
-    mse_signal = out_wch.MSE;
-    mse_array = mse_signal.Data;
-    final_mse = mse_array(end);
+    simIn_wch = setVariable(simIn_wch, 'ref_signal', ref_signal);
+    simIn_wch = setModelParameter(simIn_wch, 'TimeOut', 30);
     
-    energy_signal = out_wch.energy;
-    energy_array = energy_signal.Data;
-    final_energy = energy_array(end);
-   
-    J3_mse = final_mse;
-    J3_en = final_energy;
-    
+    try
+        out_wch = sim(simIn_wch);
+        mse_signal = out_wch.MSE;
+        mse_array = mse_signal.Data;
+        final_mse = mse_array(end);
+        energy_signal = out_wch.energy;
+        energy_array = energy_signal.Data;
+        final_energy = energy_array(end);
+        J3_mse = final_mse;
+        J3_en = final_energy;
+    catch
+        J3_mse = 1e6;
+        J3_en = 1e6;
+    end
+        
     % Total cost
     Total_MSE = J1_mse + J2_mse + J3_mse;
     Total_Energy = J1_en + J2_en + J3_en;
